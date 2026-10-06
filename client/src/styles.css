@@ -476,11 +476,124 @@ input:focus {
   margin-top: 14px;
 }
 
+/* Setup wizard */
+.auth:has(.setup-card) {
+  padding: 32px 16px;
+}
+.setup-card {
+  max-width: 560px;
+}
+fieldset {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 22px 0 0;
+  padding: 18px 0 0;
+  min-width: 0;
+}
+legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--navy);
+}
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  color: var(--navy);
+}
+.step-1 {
+  background: var(--yellow);
+}
+.step-2 {
+  background: var(--blue);
+  color: #fff;
+}
+.step-3 {
+  background: var(--green);
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 0 12px;
+}
+.hint,
+.small {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.small {
+  margin-top: 14px;
+}
+code {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 4px;
+  word-break: break-all;
+}
+.test-row {
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.status {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.status.ok {
+  color: var(--success);
+}
+.status.bad {
+  color: var(--danger);
+}
+.link-btn.inline {
+  margin: 0;
+  font-size: 0.82rem;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--body);
+  cursor: pointer;
+}
+.check input {
+  width: auto;
+  accent-color: var(--navy);
+}
+.env-block {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+}
+.env-block pre {
+  margin: 10px 0 0;
+  max-height: 260px;
+  overflow: auto;
+  font: 0.78rem/1.6 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  color: var(--text);
+  white-space: pre;
+}
+
 @media (max-width: 640px) {
   .hide-sm {
     display: none;
   }
-  .options {
+  .options,
+  .grid-2 {
     grid-template-columns: 1fr;
   }
   .row:has(> .grow) {

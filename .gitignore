@@ -6,3 +6,4 @@ client/dist/
 # Local brand source files (not needed by the app)
 /brandbook.pdf
 /logo.png
+.env.bak-*

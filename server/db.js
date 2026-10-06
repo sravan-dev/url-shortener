@@ -1,24 +1,49 @@
 import mysql from 'mysql2/promise';
 
-export const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  charset: 'utf8mb4',
-  timezone: 'Z',
-});
+export function dbConfigFromEnv(env = process.env) {
+  return {
+    host: env.DB_HOST || 'localhost',
+    port: Number(env.DB_PORT) || 3306,
+    user: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
+  };
+}
 
-// Store and read every DATETIME as UTC regardless of the server's local time zone.
-pool.pool.on('connection', (connection) => {
-  connection.query("SET time_zone = '+00:00'");
-});
+// Live binding: routes read `pool` at call time, so it can be created after setup completes.
+export let pool = null;
 
-export async function initDb() {
-  await pool.query(`
+export async function connectDb(config = dbConfigFromEnv()) {
+  const next = mysql.createPool({
+    ...config,
+    waitForConnections: true,
+    connectionLimit: 10,
+    charset: 'utf8mb4',
+    timezone: 'Z',
+  });
+  // Store and read every DATETIME as UTC regardless of the server's local time zone.
+  next.pool.on('connection', (connection) => {
+    connection.query("SET time_zone = '+00:00'");
+  });
+  await initDb(next);
+  const previous = pool;
+  pool = next;
+  if (previous) previous.end().catch(() => {});
+}
+
+// One-off connection used by the setup wizard to validate credentials.
+export async function testConnection(config) {
+  const connection = await mysql.createConnection({ ...config, connectTimeout: 8000 });
+  try {
+    const [[row]] = await connection.query('SELECT VERSION() AS version');
+    return row.version;
+  } finally {
+    await connection.end().catch(() => {});
+  }
+}
+
+async function initDb(target) {
+  await target.query(`
     CREATE TABLE IF NOT EXISTS links (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
       code VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,

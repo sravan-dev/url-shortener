@@ -4,17 +4,12 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { pool, initDb } from './db.js';
+import { pool, connectDb } from './db.js';
 import { CODE_RE } from './codes.js';
 import authRouter from './routes/auth.js';
 import linksRouter from './routes/links.js';
-
-const REQUIRED_ENV = ['DB_USER', 'DB_NAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'JWT_SECRET'];
-const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
-if (missing.length) {
-  console.error(`Missing required environment variables: ${missing.join(', ')}`);
-  process.exit(1);
-}
+import setupRouter from './routes/setup.js';
+import { isConfigured, markConfigured, missingEnv } from './setup.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../client/dist');
@@ -25,6 +20,14 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
+
+app.use('/api/setup', setupRouter);
+
+// Until setup is finished, only the setup API and the static app are available.
+app.use('/api', (req, res, next) => {
+  if (isConfigured()) return next();
+  res.status(503).json({ error: 'Setup required', setupRequired: true });
+});
 
 app.get('/api/health', async (req, res) => {
   await pool.query('SELECT 1');
@@ -41,7 +44,7 @@ app.use(express.static(distDir, { index: false }));
 // Short link redirect.
 app.get('/:code', async (req, res, next) => {
   const { code } = req.params;
-  if (!CODE_RE.test(code)) return next();
+  if (!isConfigured() || !CODE_RE.test(code)) return next();
   const [rows] = await pool.query('SELECT id, url FROM links WHERE code = ? LIMIT 1', [code]);
   if (!rows.length) return next();
   pool
@@ -57,7 +60,8 @@ app.use((req, res) => {
     return res.status(404).send('Not found');
   }
   res.set('Cache-Control', 'no-cache');
-  res.status(req.path === '/' ? 200 : 404).sendFile(indexHtml);
+  const ok = req.path === '/' || !isConfigured();
+  res.status(ok ? 200 : 404).sendFile(indexHtml);
 });
 
 app.use((err, req, res, next) => {
@@ -68,11 +72,18 @@ app.use((err, req, res, next) => {
 
 const port = Number(process.env.PORT) || 3000;
 
-initDb()
-  .then(() => {
-    app.listen(port, () => console.log(`URL shortener running on http://localhost:${port}`));
-  })
-  .catch((err) => {
-    console.error('Database initialisation failed:', err.message);
-    process.exit(1);
-  });
+async function start() {
+  const missing = missingEnv();
+  if (missing.length) {
+    console.log(`Setup required (missing: ${missing.join(', ')}). Open the site in your browser to finish setup.`);
+  } else {
+    await connectDb();
+    markConfigured();
+  }
+  app.listen(port, () => console.log(`URL shortener running on http://localhost:${port}`));
+}
+
+start().catch((err) => {
+  console.error('Startup failed:', err.message);
+  process.exit(1);
+});

@@ -10,6 +10,17 @@ React + Vite frontend, Express API, MySQL storage. One Node app serves the porta
 - Search, edit destination/title, delete
 - `https://your-domain/<code>` → 302 redirect; unknown codes show a "Link not found" page
 - Table is created automatically on first start
+- First-run setup wizard generates the `.env` file from the browser
+
+## First-run setup wizard
+
+If the required variables are missing when the server starts, it runs in **setup mode** instead of exiting:
+
+1. Open the site. The setup page asks for the MySQL details (with a *Test connection* button), the site URL and the admin email and password.
+2. **Finish setup** checks the database, writes `.env` (an existing one is backed up as `.env.bak-<timestamp>`), generates `JWT_SECRET`, creates the table and makes the portal live without a restart.
+3. The finish screen shows the generated `.env` so you can copy it.
+
+Once configured, the setup endpoints refuse every request. Until then anyone who reaches the site can run setup, so complete it right after deploying. To run setup again, delete `.env` and restart the app. Variables set in the hosting panel take priority over `.env`; if they are all set, the wizard never appears.
 
 ## Local development
 
@@ -49,7 +60,7 @@ Production-style run: `npm run build && npm start` → http://localhost:3000.
    - Node version: 20.x or newer
    - Build command: `npm run build`
    - Start command / entry file: `npm start` (entry: `server/index.js`)
-4. **Environment variables** — add every variable from the table above in the app's settings.
+4. **Configuration** — either add every variable from the table above in the app's settings, **or** deploy without them and open the site right after deploying and complete the setup wizard. Redeploys can replace the app folder and the generated `.env` with it, so copy the values shown at the end of setup into hPanel's environment variables as well.
 5. Deploy. Check `https://your-domain/api/health` → `{"ok":true}`, then sign in at `https://your-domain/`.
 
 Note: Node.js apps need a Hostinger plan that supports them (Business, Cloud or VPS). On a VPS, run `npm ci && npm run build`, then keep `npm start` alive with PM2 behind Nginx.
