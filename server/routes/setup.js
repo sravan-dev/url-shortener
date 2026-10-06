@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { connectDb, testConnection } from '../db.js';
+import { loadSettings } from '../settings.js';
 import { isConfigured, markConfigured, buildEnvFile, writeEnvFile, ENV_PATH } from '../setup.js';
 
 const router = Router();
@@ -145,6 +146,7 @@ async function completeSetup(req, res, { db, baseUrl, adminEmail, adminPassword 
 
   Object.assign(process.env, values);
   await connectDb();
+  await loadSettings();
   markConfigured();
   console.log('Setup complete — portal is live.');
 

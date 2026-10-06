@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { api } from '../api.js';
 import Logo, { Dots } from './Logo.jsx';
+import { useSettings } from '../settings.js';
 
 export default function Login({ onSignedIn }) {
+  const { settings } = useSettings();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,10 +26,10 @@ export default function Login({ onSignedIn }) {
     <main className="auth">
       <form className="card auth-card" onSubmit={handleSubmit}>
         <Logo height={84} />
-        <p className="kicker">Link Portal</p>
+        <p className="kicker">{settings.siteTitle}</p>
         <h1>Sign in</h1>
         <Dots className="rule" />
-        <p className="muted">Create, track and manage Tiju's Academy short links.</p>
+        <p className="muted">Create, track and manage your short links.</p>
 
         <label className="field">
           <span>Email</span>

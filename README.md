@@ -11,6 +11,7 @@ React + Vite frontend, Express API, MySQL storage. One Node app serves the porta
 - `https://your-domain/<code>` → 302 redirect; unknown codes show a "Link not found" page
 - Table is created automatically on first start
 - First-run setup wizard generates the `.env` file from the browser
+- Settings page (gear icon): website title, logo and favicon upload, noindex toggle, fallback URL for unknown short links. Stored in MySQL, so they survive redeploys
 
 ## First-run setup wizard
 

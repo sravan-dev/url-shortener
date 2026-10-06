@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
-import Logo, { Dots } from './Logo.jsx';
+import { Dots } from './Logo.jsx';
 import CreateLink from './CreateLink.jsx';
 import LinkRow from './LinkRow.jsx';
 
-export default function Dashboard({ user, onSignedOut }) {
+export default function Dashboard({ onSignedOut }) {
   const [links, setLinks] = useState([]);
   const [totals, setTotals] = useState({ links: 0, clicks: 0 });
   const [search, setSearch] = useState('');
@@ -34,11 +34,6 @@ export default function Dashboard({ user, onSignedOut }) {
     return () => clearTimeout(timer);
   }, [search, load]);
 
-  async function signOut() {
-    await api.logout().catch(() => {});
-    onSignedOut();
-  }
-
   function handleCreated(link) {
     setLinks((prev) => [link, ...prev]);
     setTotals((t) => ({ ...t, links: t.links + 1 }));
@@ -56,21 +51,6 @@ export default function Dashboard({ user, onSignedOut }) {
 
   return (
     <>
-      <header className="topbar">
-        <div className="container topbar-inner">
-          <div className="row brand">
-            <Logo height={50} />
-            <span className="product hide-sm">Link Portal</span>
-          </div>
-          <div className="row">
-            <span className="muted hide-sm">{user.email}</span>
-            <button className="btn small" onClick={signOut}>
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="container stack">
         <div className="stats">
           <div className="card stat stat-yellow">

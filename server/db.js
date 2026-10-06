@@ -44,6 +44,13 @@ export async function testConnection(config) {
 
 async function initDb(target) {
   await target.query(`
+    CREATE TABLE IF NOT EXISTS settings (
+      name VARCHAR(64) NOT NULL PRIMARY KEY,
+      value MEDIUMTEXT NULL,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await target.query(`
     CREATE TABLE IF NOT EXISTS links (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
       code VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,

@@ -5,7 +5,7 @@ const ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const CODE_RE = /^[A-Za-z0-9_-]{3,64}$/;
 
 // Paths used by the app itself; never hand them out as short codes.
-export const RESERVED = new Set(['api', 'assets', 'login', 'logout', 'admin', 'dashboard', 'favicon.ico', 'robots.txt']);
+export const RESERVED = new Set(['api', 'assets', 'login', 'logout', 'admin', 'dashboard', 'settings', 'brand', 'favicon.ico', 'favicon.svg', 'logo.png', 'robots.txt']);
 
 export function randomCode(length = 6) {
   let out = '';
