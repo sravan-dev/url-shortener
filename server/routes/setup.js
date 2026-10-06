@@ -65,6 +65,10 @@ router.post('/test-db', async (req, res) => {
   }
 });
 
+// Only one setup submission may run at a time; otherwise two concurrent requests could
+// both pass the isConfigured() check and the later one would overwrite the first.
+let setupInProgress = false;
+
 router.post('/', async (req, res) => {
   let db;
   try {
@@ -88,6 +92,19 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Site URL must look like https://go.example.com' });
     }
   }
+
+  // Validation above is synchronous, so this check-and-set cannot interleave with another request.
+  if (setupInProgress) return res.status(409).json({ error: 'Setup is already in progress' });
+  setupInProgress = true;
+  try {
+    await completeSetup(req, res, { db, baseUrl, adminEmail, adminPassword });
+  } finally {
+    setupInProgress = false;
+  }
+});
+
+async function completeSetup(req, res, { db, baseUrl, adminEmail, adminPassword }) {
+  if (isConfigured()) return res.status(403).json({ error: 'Setup has already been completed' });
 
   try {
     await testConnection(db);
@@ -132,6 +149,6 @@ router.post('/', async (req, res) => {
   console.log('Setup complete — portal is live.');
 
   res.json({ ok: true, envWritten, writeError, envPath: ENV_PATH, env: content });
-});
+}
 
 export default router;
