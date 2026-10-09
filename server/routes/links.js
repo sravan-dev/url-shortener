@@ -10,7 +10,7 @@ function baseUrl(req) {
   return (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
 }
 
-function serialize(req, row) {
+function serialize(req, row, sources = []) {
   return {
     id: row.id,
     code: row.code,
@@ -20,7 +20,23 @@ function serialize(req, row) {
     lastClickedAt: row.last_clicked_at,
     createdAt: row.created_at,
     shortUrl: `${baseUrl(req)}/${row.code}`,
+    sources,
   };
+}
+
+// Per-link click counts grouped by source, most clicks first.
+async function sourcesByLink(ids) {
+  const map = new Map();
+  if (!ids.length) return map;
+  const [rows] = await pool.query(
+    'SELECT link_id, source, COUNT(*) AS clicks FROM clicks WHERE link_id IN (?) GROUP BY link_id, source ORDER BY clicks DESC, source',
+    [ids],
+  );
+  for (const row of rows) {
+    if (!map.has(row.link_id)) map.set(row.link_id, []);
+    map.get(row.link_id).push({ source: row.source, clicks: Number(row.clicks) });
+  }
+  return map;
 }
 
 function cleanTitle(title) {
@@ -39,8 +55,9 @@ router.get('/', async (req, res) => {
   }
   const [rows] = await pool.query(`SELECT * FROM links ${where} ORDER BY created_at DESC, id DESC LIMIT 1000`, params);
   const [[totals]] = await pool.query('SELECT COUNT(*) AS links, COALESCE(SUM(clicks), 0) AS clicks FROM links');
+  const sources = await sourcesByLink(rows.map((row) => row.id));
   res.json({
-    links: rows.map((row) => serialize(req, row)),
+    links: rows.map((row) => serialize(req, row, sources.get(row.id))),
     totals: { links: Number(totals.links), clicks: Number(totals.clicks) },
   });
 });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api.js';
 import CopyButton from './CopyButton.jsx';
+import Sources from './Sources.jsx';
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 const dateTimeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -24,7 +25,8 @@ export default function LinkRow({ link, onUpdated, onDeleted }) {
     setBusy(true);
     setError('');
     try {
-      onUpdated(await api.updateLink(link.id, { url, title }));
+      // The update response has no source breakdown; keep the one already loaded.
+      onUpdated({ ...(await api.updateLink(link.id, { url, title })), sources: link.sources });
       setEditing(false);
     } catch (err) {
       setError(err.message);
@@ -87,6 +89,7 @@ export default function LinkRow({ link, onUpdated, onDeleted }) {
         </div>
         {error && <p className="alert error">{error}</p>}
       </div>
+      <Sources sources={link.sources} clicks={link.clicks} />
       <div className="clicks" title="Total clicks">
         <strong>{link.clicks.toLocaleString()}</strong>
         <span>clicks</span>

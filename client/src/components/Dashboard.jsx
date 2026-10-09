@@ -79,6 +79,10 @@ export default function Dashboard({ onSignedOut }) {
               className="search"
             />
           </div>
+          <p className="hint source-tip">
+            Tip: WhatsApp, SMS, email and QR codes don’t say where a click came from. Add <code>?src=whatsapp</code>{' '}
+            (or <code>?src=email</code>, <code>?src=qr</code>…) to the short link when you share it to track those clicks.
+          </p>
 
           {error && <p className="alert error">{error}</p>}
 

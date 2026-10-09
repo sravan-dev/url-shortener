@@ -62,4 +62,16 @@ async function initDb(target) {
       UNIQUE KEY uq_links_code (code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
+  // One row per counted click, so clicks can be broken down by source.
+  await target.query(`
+    CREATE TABLE IF NOT EXISTS clicks (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      link_id INT UNSIGNED NOT NULL,
+      source VARCHAR(64) NOT NULL,
+      referrer VARCHAR(255) NULL,
+      clicked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_clicks_link_source (link_id, source),
+      CONSTRAINT fk_clicks_link FOREIGN KEY (link_id) REFERENCES links (id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
 }

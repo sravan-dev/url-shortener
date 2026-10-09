@@ -419,7 +419,7 @@ input:focus {
 }
 .link-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) 200px auto auto;
   align-items: center;
   gap: 20px;
   padding: 16px 0;
@@ -586,6 +586,72 @@ code {
   font: 0.78rem/1.6 'JetBrains Mono', ui-monospace, Consolas, monospace;
   color: var(--text);
   white-space: pre;
+}
+
+/* Click sources */
+.source-tip {
+  margin: 0 0 6px;
+}
+.sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: center;
+}
+.empty-sources {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 0.78rem;
+  color: var(--body);
+}
+.chip::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.chip.dot-0::before {
+  background: var(--yellow);
+}
+.chip.dot-1::before {
+  background: var(--blue);
+}
+.chip.dot-2::before {
+  background: var(--green);
+}
+.chip.dot-3::before {
+  background: var(--red);
+}
+.chip.muted-chip {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+}
+.chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+.chip strong {
+  font-family: var(--font-display);
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Top bar navigation */
@@ -792,6 +858,10 @@ a.brand {
   .link-item {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
+  }
+  .link-item .sources {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
   .actions {
     grid-column: 1 / -1;

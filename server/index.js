@@ -6,6 +6,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { pool, connectDb } from './db.js';
 import { CODE_RE } from './codes.js';
+import { isBot, detectSource } from './sources.js';
 import authRouter from './routes/auth.js';
 import linksRouter from './routes/links.js';
 import setupRouter from './routes/setup.js';
@@ -74,9 +75,15 @@ app.get('/:code', async (req, res, next) => {
   if (!isConfigured() || !CODE_RE.test(code)) return next();
   const [rows] = await pool.query('SELECT id, url FROM links WHERE code = ? LIMIT 1', [code]);
   if (!rows.length) return next();
-  pool
-    .query('UPDATE links SET clicks = clicks + 1, last_clicked_at = UTC_TIMESTAMP() WHERE id = ?', [rows[0].id])
-    .catch((err) => console.error('Click count failed:', err.message));
+  // Link previews (WhatsApp, Facebook, Telegram…) and crawlers still get redirected but aren't counted.
+  if (!isBot(req.get('user-agent'))) {
+    const { id } = rows[0];
+    const { source, referrer } = detectSource(req);
+    Promise.all([
+      pool.query('UPDATE links SET clicks = clicks + 1, last_clicked_at = UTC_TIMESTAMP() WHERE id = ?', [id]),
+      pool.query('INSERT INTO clicks (link_id, source, referrer) VALUES (?, ?, ?)', [id, source, referrer]),
+    ]).catch((err) => console.error('Click tracking failed:', err.message));
+  }
   res.set('Cache-Control', 'no-store');
   res.redirect(302, rows[0].url);
 });

@@ -7,6 +7,7 @@ React + Vite frontend, Express API, MySQL storage. One Node app serves the porta
 - Admin login (single account from env vars, JWT in an httpOnly cookie, rate-limited)
 - Shorten any http(s) URL, with optional custom alias and title
 - Click counting + last-click time, totals dashboard
+- Click source tracking per link (WhatsApp, Instagram, Google, Direct…). Add `?src=whatsapp` (any tag) to a short link when sharing in apps that hide the referrer. Link-preview bots are not counted
 - Search, edit destination/title, delete
 - `https://your-domain/<code>` → 302 redirect; unknown codes show a "Link not found" page
 - Table is created automatically on first start
